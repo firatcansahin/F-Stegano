@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelişmiş Dosya Karşılaştırıcı ve Çözücü | fezasanat</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .tab-active {
+            border-bottom: 3px solid #667eea;
+        }
+        .hover-scale {
+            transition: transform 0.2s;
+        }
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        .tab-active-document {
+            border-bottom: 3px solid #10B981; /* yeşil */
+        }
+        .tab-active-source {
+            border-bottom: 3px solid #8B5CF6; /* mor */
+        }
+        .tab-active-hash {
+            border-bottom: 3px solid #F59E0B; /* amber/sarı */
+        }
+        .tab-active-exe {
+            border-bottom: 3px solid #EF4444; /* kırmızı */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-4xl font-bold text-center mb-2">Dosya Karşılaştırıcı</h1>
+            <p class="text-center text-gray-100 opacity-90">Medya ve Belge Dosyalarında Gizli Metinleri Bulun</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- Tabs -->
+        <div class="flex justify-center mb-8">
+            <button onclick="switchTab('media')" id="mediaTab" class="px-6 py-3 text-lg font-semibold hover:bg-gray-100 rounded-t-lg transition-all duration-200 tab-active">
+                <i class="fas fa-photo-video mr-2"></i>Medya Çözücü
+            </button>
+            <button onclick="switchTab('document')" id="documentTab" class="px-6 py-3 text-lg font-semibold hover:bg-gray-100 rounded-t-lg transition-all duration-200">
+                <i class="fas fa-file-alt mr-2"></i>Belge İçerik
+            </button>
+            <button onclick="switchTab('source')" id="sourceTab" class="px-6 py-3 text-lg font-semibold hover:bg-gray-100 rounded-t-lg transition-all duration-200">
+                <i class="fas fa-code mr-2"></i>Belge Kaynak
+            </button>
+            <button onclick="switchTab('hash')" id="hashTab" class="px-6 py-3 text-lg font-semibold hover:bg-gray-100 rounded-t-lg transition-all duration-200">
+                <i class="fas fa-key mr-2"></i>Hash Bulucu
+            </button>
+            <button onclick="switchTab('exe')" id="exeTab" class="px-6 py-3 text-lg font-semibold hover:bg-gray-100 rounded-t-lg transition-all duration-200">
+                <i class="fas fa-cogs mr-2"></i>EXE Çözücü
+            </button>
+        </div>
+
+        <!-- Media Section -->
+        <div id="mediaSection" class="slide-in">
+            <div class="bg-white rounded-lg shadow-xl p-6 hover-scale">
+                <div class="mb-6">
+                    <div class="flex items-center justify-center w-full">
+                        <label class="flex flex-col w-full h-40 border-4 border-dashed hover:bg-gray-50 hover:border-blue-500 rounded-lg transition-all duration-200 ease-in-out group">
+                            <div class="flex flex-col items-center justify-center pt-7">
+                                <svg class="w-16 h-16 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <p class="pt-3 text-sm tracking-wider text-gray-400 group-hover:text-blue-500">
+                                    <span class="font-semibold">Medya Dosyalarını Seçin</span> veya Sürükleyin
+                                </p>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    PNG, JPG, GIF, BMP, MP4, AVI, MOV
+                                </p>
+                            </div>
+                            <input type="file" class="opacity-0 absolute" id="fileInput" multiple accept=".png,.jpg,.jpeg,.gif,.bmp,.mp4,.avi,.mov"/>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Section -->
+        <div id="documentSection" class="hidden slide-in">
+            <div class="bg-white rounded-lg shadow-xl p-6 hover-scale">
+                <div class="mb-6">
+                    <div class="flex items-center justify-center w-full">
+                        <label class="flex flex-col w-full h-40 border-4 border-dashed hover:bg-gray-50 hover:border-green-500 rounded-lg transition-all duration-200 ease-in-out group">
+                            <div class="flex flex-col items-center justify-center pt-7">
+                                <svg class="w-16 h-16 text-gray-400 group-hover:text-green-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="pt-3 text-sm tracking-wider text-gray-400 group-hover:text-green-500">
+                                    <span class="font-semibold">Belge Dosyalarını Seçin</span> veya Sürükleyin
+                                </p>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    DOC, DOCX, XLS, XLSX, PDF, TXT
+                                </p>
+                            </div>
+                            <input type="file" class="opacity-0 absolute" id="documentInput" multiple accept=".doc,.docx,.xls,.xlsx,.pdf,.txt"/>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Source Section -->
+        <div id="sourceSection" class="hidden slide-in">
+            <div class="bg-white rounded-lg shadow-xl p-6 hover-scale">
+                <div class="mb-6">
+                    <div class="flex items-center justify-center w-full">
+                        <label class="flex flex-col w-full h-40 border-4 border-dashed hover:bg-gray-50 hover:border-purple-500 rounded-lg transition-all duration-200 ease-in-out group">
+                            <div class="flex flex-col items-center justify-center pt-7">
+                                <svg class="w-16 h-16 text-gray-400 group-hover:text-purple-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                                </svg>
+                                <p class="pt-3 text-sm tracking-wider text-gray-400 group-hover:text-purple-500">
+                                    <span class="font-semibold">Belge Dosyalarını Seçin</span> veya Sürükleyin
+                                </p>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    DOC, DOCX, PDF, TXT
+                                </p>
+                            </div>
+                            <input type="file" class="opacity-0 absolute" id="sourceInput" multiple accept=".doc,.docx,.pdf,.txt"/>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hash Section -->
+        <div id="hashSection" class="hidden slide-in">
+            <div class="bg-white rounded-lg shadow-xl p-6 hover-scale">
+                <div class="mb-6">
+                    <div class="flex items-center justify-center w-full">
+                        <label class="flex flex-col w-full h-40 border-4 border-dashed hover:bg-gray-50 hover:border-yellow-500 rounded-lg transition-all duration-200 ease-in-out group">
+                            <div class="flex flex-col items-center justify-center pt-7">
+                                <svg class="w-16 h-16 text-gray-400 group-hover:text-yellow-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                                </svg>
+                                <p class="pt-3 text-sm tracking-wider text-gray-400 group-hover:text-yellow-500">
+                                    <span class="font-semibold">Dosyaları Seçin</span> veya Sürükleyin
+                                </p>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    Tüm Dosya Formatları
+                                </p>
+                            </div>
+                            <input type="file" class="opacity-0 absolute" id="hashInput" multiple/>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXE Section -->
+        <div id="exeSection" class="hidden slide-in">
+            <div class="bg-white rounded-lg shadow-xl p-6 hover-scale">
+                <div class="mb-6">
+                    <div class="flex items-center justify-center w-full">
+                        <label class="flex flex-col w-full h-40 border-4 border-dashed hover:bg-gray-50 hover:border-red-500 rounded-lg transition-all duration-200 ease-in-out group">
+                            <div class="flex flex-col items-center justify-center pt-7">
+                                <svg class="w-16 h-16 text-gray-400 group-hover:text-red-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                                </svg>
+                                <p class="pt-3 text-sm tracking-wider text-gray-400 group-hover:text-red-500">
+                                    <span class="font-semibold">EXE Dosyası Seçin</span> veya Sürükleyin
+                                </p>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    EXE, DLL, SYS
+                                </p>
+                            </div>
+                            <input type="file" class="opacity-0 absolute" id="exeInput" accept=".exe,.dll,.sys"/>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Files List -->
+        <div id="fileList" class="hidden mt-8">
+            <div class="bg-white rounded-lg shadow-lg p-6 slide-in">
+                <h3 class="font-semibold text-lg mb-3 text-gray-700 flex items-center">
+                    <i class="fas fa-list-ul mr-2 text-blue-500"></i>
+                    Seçilen Dosyalar
+                </h3>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <ul id="selectedFiles" class="space-y-2"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div id="result" class="hidden mt-8">
+            <div class="bg-white rounded-lg shadow-lg p-6 slide-in">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-lg text-gray-800 flex items-center">
+                        <i class="fas fa-search mr-2 text-green-500"></i>
+                        Bulunan Ortak Metinler
+                    </h3>
+                    <div class="space-x-2">
+                        <button onclick="copyResults()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center hover:scale-105 transform">
+                            <i class="fas fa-copy mr-2"></i> Kopyala
+                        </button>
+                        <button onclick="downloadResults()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center hover:scale-105 transform">
+                            <i class="fas fa-download mr-2"></i> İndir
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <pre id="message" class="text-gray-700 whitespace-pre-line break-all"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error" class="hidden mt-8">
+            <div class="bg-red-50 p-4 rounded-lg shadow-lg slide-in">
+                <p id="errorMessage" class="text-red-700 flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="hidden mt-8">
+            <div class="flex items-center justify-center p-8">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="gradient-bg text-white mt-8">
+        <div class="container mx-auto px-4 py-6">
+            <p class="text-center text-gray-100 opacity-90">
+                Dosya Karşılaştırıcı ve Kaynak Çözücü &copy; 2025 | Tüm Hakları fezasanat'a Aittir.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Her iki input için event listener'lar
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        document.getElementById('documentInput').addEventListener('change', handleFileSelect);
+        
+        // Her iki drop zone için event listener'lar
+        const dropZones = document.querySelectorAll('label');
+        dropZones.forEach(dropZone => {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.add('border-blue-500', 'bg-gray-50');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.remove('border-blue-500', 'bg-gray-50');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', handleDrop, false);
+        });
+
+        function preventDefaults (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        async function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            await handleFiles(files);
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = Array.from(dt.files);
+            handleFiles(files);
+        }
+
+        async function handleFiles(files) {
+            if (!files.length) return;
+
+            // Show loading
+            document.getElementById('loading').classList.remove('hidden');
+            
+            // Show selected files
+            const fileList = document.getElementById('fileList');
+            const selectedFiles = document.getElementById('selectedFiles');
+            selectedFiles.innerHTML = '';
+            
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center space-x-2 text-gray-700';
+                li.innerHTML = `
+                    <i class="fas fa-file-alt text-blue-500"></i>
+                    <span>${file.name}</span>
+                    <span class="text-gray-400 text-sm">(${formatFileSize(file.size)})</span>
+                `;
+                selectedFiles.appendChild(li);
+            });
+            fileList.classList.remove('hidden');
+
+            const formData = new FormData();
+            files.forEach(file => {
+                formData.append('files[]', file);
+            });
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                // Hide loading
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error').classList.add('hidden');
+                document.getElementById('result').classList.add('hidden');
+
+                if (response.ok) {
+                    document.getElementById('result').classList.remove('hidden');
+                    document.getElementById('message').textContent = data.message;
+                } else {
+                    document.getElementById('error').classList.remove('hidden');
+                    document.getElementById('errorMessage').textContent = data.error;
+                }
+            } catch (error) {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error').classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = 'Bir hata oluştu. Lütfen tekrar deneyin.';
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function copyResults() {
+            const text = document.getElementById('message').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Sonuçlar panoya kopyalandı!');
+            }).catch(err => {
+                console.error('Kopyalama başarısız:', err);
+                alert('Kopyalama başarısız oldu. Lütfen manuel olarak kopyalayın.');
+            });
+        }
+
+        function downloadResults() {
+            const text = document.getElementById('message').textContent;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sonuclar.txt';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        function switchTab(tab) {
+            // Tüm tab classlarını kaldır
+            document.getElementById('mediaTab').classList.remove('tab-active', 'tab-active-document', 'tab-active-source', 'tab-active-hash', 'tab-active-exe');
+            document.getElementById('documentTab').classList.remove('tab-active', 'tab-active-document', 'tab-active-source', 'tab-active-hash', 'tab-active-exe');
+            document.getElementById('sourceTab').classList.remove('tab-active', 'tab-active-document', 'tab-active-source', 'tab-active-hash', 'tab-active-exe');
+            document.getElementById('hashTab').classList.remove('tab-active', 'tab-active-document', 'tab-active-source', 'tab-active-hash', 'tab-active-exe');
+            document.getElementById('exeTab').classList.remove('tab-active', 'tab-active-document', 'tab-active-source', 'tab-active-hash', 'tab-active-exe');
+            
+            // Seçili taba göre class ekle
+            if (tab === 'media') {
+                document.getElementById('mediaTab').classList.add('tab-active');
+            } else if (tab === 'document') {
+                document.getElementById('documentTab').classList.add('tab-active-document');
+            } else if (tab === 'source') {
+                document.getElementById('sourceTab').classList.add('tab-active-source');
+            } else if (tab === 'hash') {
+                document.getElementById('hashTab').classList.add('tab-active-hash');
+            } else {
+                document.getElementById('exeTab').classList.add('tab-active-exe');
+            }
+            
+            // Bölümleri göster/gizle
+            document.getElementById('mediaSection').classList.toggle('hidden', tab !== 'media');
+            document.getElementById('documentSection').classList.toggle('hidden', tab !== 'document');
+            document.getElementById('sourceSection').classList.toggle('hidden', tab !== 'source');
+            document.getElementById('hashSection').classList.toggle('hidden', tab !== 'hash');
+            document.getElementById('exeSection').classList.toggle('hidden', tab !== 'exe');
+            
+            // Sonuçları ve hata mesajlarını temizle
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('fileList').classList.add('hidden');
+        }
+
+        // Yeni input için event listener ekleyin
+        document.getElementById('sourceInput').addEventListener('change', handleFileSelect);
+        document.getElementById('hashInput').addEventListener('change', function(e) {
+            const formData = new FormData();
+            Array.from(e.target.files).forEach(file => {
+                formData.append('files[]', file);
+            });
+            formData.append('type', 'hash');
+            handleFiles(Array.from(e.target.files), formData);
+        });
+
+        document.getElementById('exeInput').addEventListener('change', function(e) {
+            const formData = new FormData();
+            Array.from(e.target.files).forEach(file => {
+                formData.append('files[]', file);
+            });
+            formData.append('type', 'exe');
+            handleFiles(Array.from(e.target.files), formData);
+        });
+    </script>
+</body>
+</html> 
